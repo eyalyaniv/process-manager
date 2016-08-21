@@ -13,25 +13,73 @@ var webhookUri = "https://hooks.slack.com/services/T03GXQATX/B22HQQB8V/OH31KG1EE
 var accountName = "https://egames.leankit.com";
 var email = "eyal@7egames.com";
 var password = "eyal2leankit";
-var boardId = 156116725; //Execution board Id
+var boardId_execution = 156116725; //Execution board Id
 
 // Instances creation
 var client = new LeanKitClient( accountName, email, password );
-var events = new LeanKitEvents( client, boardId);
+var events = new LeanKitEvents( client, boardId_execution);
 var slack = new Slack();
-
 slack.setWebhook(webhookUri);
 
-client.getBoards( function( err, boards ) {  
-  if ( err ) console.error( "Error getting boards:", err );
-  //console.log( boards );
-} );
+// Gets all the boards objects under the account 
+// client.getBoards( function( err, boards ) {  
+//   if ( err ) console.error( "Error getting boards:", err );
+//   //console.log( boards );
+// } );
 
 
+var leankitEventsList = {
+    "card-move-to-board": function( e ) {
+        console.log(e);
+        var card = getLeankitCard(boardId_execution, e.card);
+        sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", card.message);
+    },
+    "card-move": function( e ) {
+        console.log(e);
+        var card = getLeankitCard(boardId_execution, e.card);
+        sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", card.message);
+    }
+};
+
+function generateEvents(eventList){
+    for(var e in eventList){
+        events.on(e, eventList[e]);
+    }
+    events.start();
+}
+
+generateEvents(leankitEventsList);
+
+function getLeankitCard(boardId, cardId){
+    client.getCard(boardId, cardId, function(err, card){
+        if ( err ) console.error( "Error getting card:", err );
+        console.log( card );
+        return card;
+    });
+}
+
+function insertPostDemoReport(){
+
+}
+
+function sendMsgToSlack(sender, target, msg){
+  
+    slack.webhook({
+        channel: target,
+        username: sender,
+        text: msg
+    },  function(err, response) {
+            console.log(msg);
+        });
+}
+
+/*
+// ***** Prototype ***** //
 //Subscribe to card-move leankit event
 events.on( "card-move", function( e ) {
     console.log( e );
 
+    //Gets a leankit card object from the specific board
     client.getCard('156116725', e.cardId, function(err, card){
       if ( err ) console.error( "Error getting boards:", err );
       console.log( card );
@@ -49,15 +97,16 @@ events.on( "card-move", function( e ) {
     );
 
     //Send to slack channel
+    slack.setWebhook(webhookUri);
     slack.webhook({
-    channel: "#eyals_playground",
+    channel: "@eyalyaniv",
     username: "LeankitBot",
     text: e.message
     }, function(err, response) {
-      console.log(response);
+      console.log(e.message);
     });
 });
 events.start();
-
+*/
 
 
