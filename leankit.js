@@ -21,7 +21,30 @@ var events = new LeanKitEvents( client, boardId_execution);
 var slack = new Slack();
 slack.setWebhook(webhookUri);
 
+//Lookup table to convert Leankit user Id to slack private channel
+var usersLeankitToSlack = {
+    132006304: "@tinomatalon",
+    134392332: "@alext",
+    257515763: "@alonb",
+    351522729: "@amir",
+    134400937: "@anatolii",
+    258096719: "@andrey",
+    261692832: "@daniel.matalon",
+    323985909: "@daiella",
+    207536925: "@dave.raanan",
+    134392329: "@dmsapiga",
+    272850592: "@dor",
+    134400938: "@elenav",
+    152743345: "@eyalyaniv",
+    282034219: "@johnny21",
+    263323996: "@hayim",
+    130929363: "@itai",
+    358647187: "@galstilkol"
+};
+
+//Leankit API events 
 var leankitEventsList = {
+    //Occurs when a card is moved from another board to the board being monitored.
     "card-move-to-board": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -29,10 +52,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });  
     },
+    //Occurs when a card is moved on the board.
     "card-move": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -40,10 +64,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
+    //Occurs when a new card is added to a board.
     "card-creation": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -51,10 +76,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
+    //Occurs when a card is blocked or unblocked. Check the isBlocked property to know whether the card was blocked or unblocked.
     "card-blocked": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -62,10 +88,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
+    //Occurs when a card is deleted.
     "card-deleted": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -73,10 +100,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
+    //Occurs when users are assigned or unassigned from a card. Check the isUnassigning property to know whether the user is being assigned or unassigned.
     "user-assignment": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -84,10 +112,11 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
+    //Occurs when a user posts a comment on a card.
     "comment-post": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -95,11 +124,17 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     }
 };
+
+//Gets all the boards objects under the account 
+client.getBoard(boardId_execution, function( err, board ) {  
+   if ( err ) console.error( "Error getting boards:", err );
+   console.log(board.BoardUsers);
+ });
 
 function generateEvents(eventList){
     for(var e in eventList){
@@ -143,10 +178,6 @@ function sendMsgToSlack(sender, target, msg){
         });
 }
 
-// Gets all the boards objects under the account 
-// client.getBoards( function( err, boards ) {  
-//   if ( err ) console.error( "Error getting boards:", err );
-//   //console.log( boards );
-// } );
+
 
 
