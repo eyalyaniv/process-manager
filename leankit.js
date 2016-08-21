@@ -66,9 +66,14 @@ function getLeankitCard(boardId, cardId, event, cb){
 }
 
 function insertPostDemoReport(event){
-    request.post( gms_pdr_script_url, event, function (error, response, body) {
+    // request.post( gms_pdr_script_url, JSON.stringify(event), function (error, response, body) {
+    //     if (!error && response.statusCode == 200) {
+    //         console.log(body);
+    //     }
+    // });
+    request( { method: 'POST', url: gms_pdr_script_url, headers: {'Content-Type': 'application/json'}, json: event}, function (error, response, body) {
         if (!error && response.statusCode == 200) {
-            console.log(body);
+            //console.log(body);
         }
     });
 }
