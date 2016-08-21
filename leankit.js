@@ -43,6 +43,61 @@ var leankitEventsList = {
             sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
             insertPostDemoReport(event);
         });
+    },
+    "card-creation": function( e ) {
+        console.log(e);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
+    },
+    "card-blocked": function( e ) {
+        console.log(e);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
+    },
+    "card-deleted": function( e ) {
+        console.log(e);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
+    },
+    "user-assignment": function( e ) {
+        console.log(e);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
+    },
+    "comment-post": function( e ) {
+        console.log(e);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
     }
 };
 
