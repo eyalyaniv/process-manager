@@ -39,7 +39,32 @@ var usersLeankitToSlack = {
     282034219: "@johnny21",
     263323996: "@hayim",
     130929363: "@itai",
-    358647187: "@galstilkol"
+    358647187: "@galstilkol",
+    206168375: "@hanan",
+    356774137: "@hananta",
+    270744237: "@ido",
+    269090773: "@ilia_unity_dev",
+    135868441: "@storyteller",
+    167212913: "@jony",
+    266487800: "@kosta",
+    222533001: "@markshteller",
+    130925612: "@matan.eine",
+    376981089: "@max_botvinev",
+    301468157: "@maxim",
+    134399011: "@mmotuz",
+    338393030: "@nevogal",
+    156104905: "@oded",
+    229046300: "@alifrin",
+    227661394: "@oleksiibobko",
+    134399005: "@alexm",
+    347786749: "@robert",
+    130931078: "@scott",
+    134408802: "@sergeyg",
+    165029913: "@sergbeskr",
+    132006303: "@yaron",
+    132019021: "@tomerbarkan",
+    129277315: "@tal",
+    219782980: "@shish"
 };
 
 //Leankit API events 
