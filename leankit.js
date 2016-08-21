@@ -21,23 +21,28 @@ var events = new LeanKitEvents( client, boardId_execution);
 var slack = new Slack();
 slack.setWebhook(webhookUri);
 
-// Gets all the boards objects under the account 
-// client.getBoards( function( err, boards ) {  
-//   if ( err ) console.error( "Error getting boards:", err );
-//   //console.log( boards );
-// } );
-
-
 var leankitEventsList = {
     "card-move-to-board": function( e ) {
         console.log(e);
-        var card = getLeankitCard(boardId_execution, e.card);
-        sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", card.message);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });  
     },
     "card-move": function( e ) {
         console.log(e);
-        var card = getLeankitCard(boardId_execution, e.card);
-        sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", card.message);
+        getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
+            if(err){
+                console.error( "Error getting leankit card:", err );
+                return;
+            }
+            sendMsgToSlack("ProcessMangrBot", "@eyalyaniv", event.message);
+            insertPostDemoReport(event);
+        });
     }
 };
 
@@ -50,20 +55,25 @@ function generateEvents(eventList){
 
 generateEvents(leankitEventsList);
 
-function getLeankitCard(boardId, cardId){
+function getLeankitCard(boardId, cardId, event, cb){
+
     client.getCard(boardId, cardId, function(err, card){
-        if ( err ) console.error( "Error getting card:", err );
-        console.log( card );
-        return card;
+        if ( err ) {  
+            return cb(err);
+        }
+        cb(null, card, event);
     });
 }
 
-function insertPostDemoReport(){
-
+function insertPostDemoReport(event){
+    request.post( gms_pdr_script_url, event, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            console.log(body);
+        }
+    });
 }
 
 function sendMsgToSlack(sender, target, msg){
-  
     slack.webhook({
         channel: target,
         username: sender,
@@ -73,40 +83,10 @@ function sendMsgToSlack(sender, target, msg){
         });
 }
 
-/*
-// ***** Prototype ***** //
-//Subscribe to card-move leankit event
-events.on( "card-move", function( e ) {
-    console.log( e );
-
-    //Gets a leankit card object from the specific board
-    client.getCard('156116725', e.cardId, function(err, card){
-      if ( err ) console.error( "Error getting boards:", err );
-      console.log( card );
-    });
-    
-    //Send to team's post demo report
-    request.post(
-      gms_pdr_script_url,
-      e,
-        function (error, response, body) {
-          if (!error && response.statusCode == 200) {
-              console.log(body)
-          }
-        }
-    );
-
-    //Send to slack channel
-    slack.setWebhook(webhookUri);
-    slack.webhook({
-    channel: "@eyalyaniv",
-    username: "LeankitBot",
-    text: e.message
-    }, function(err, response) {
-      console.log(e.message);
-    });
-});
-events.start();
-*/
+// Gets all the boards objects under the account 
+// client.getBoards( function( err, boards ) {  
+//   if ( err ) console.error( "Error getting boards:", err );
+//   //console.log( boards );
+// } );
 
 
