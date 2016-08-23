@@ -1,3 +1,10 @@
+
+'use strict';
+
+//Flags
+var slackInt = false;
+var gSheets = true;
+
 // Reference to packages
 var LeanKitClient = require( "leankit-client" );
 var LeanKitEvents = require( "leankit-client/events" );
@@ -77,7 +84,9 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });  
     },
@@ -89,7 +98,9 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });
     },
@@ -101,19 +112,30 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });
     },
     //Occurs when a card is blocked or unblocked. Check the isBlocked property to know whether the card was blocked or unblocked.
     "card-blocked": function( e ) {
         console.log(e);
+        //e.blockedComment
+        //e.isBlocked true/false
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
             if(err){
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(e.isBlocked){
+                if(!slackInt){
+                    //Sends msg to the person who blocked the card
+                    sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], usersLeankitToSlack[e.userId] + ", You just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". Please make sure it's approved at #block_task_approval");
+                    //Sends msg to #block_task_approval channel to notify that a card was blocked without reason
+                    //sendMsgToSlack("Process-Manager-Bot", "#block_task_approval", usersLeankitToSlack[e.userId] + " just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". @tal, @eyalyaniv Please make sure it's approved");  
+                }
+            }
             insertPostDemoReport(event);
         });
     },
@@ -125,7 +147,9 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });
     },
@@ -137,7 +161,9 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });
     },
@@ -149,13 +175,15 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            sendMsgToSlack("ProcessMangrBot", usersLeankitToSlack[e.userId], event.message);
+            if(slackInt){
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            }
             insertPostDemoReport(event);
         });
     }
 };
 
-//Gets all the boards objects under the account 
+//Gets a board object under the account 
 client.getBoard(boardId_execution, function( err, board ) {  
    if ( err ) console.error( "Error getting boards:", err );
    console.log(board.BoardUsers);
@@ -178,6 +206,10 @@ function getLeankitCard(boardId, cardId, event, cb){
         }
         cb(null, card, event);
     });
+}
+
+function getLeankitBoard(){
+
 }
 
 function insertPostDemoReport(event){
@@ -203,6 +235,17 @@ function sendMsgToSlack(sender, target, msg){
         });
 }
 
+// ******************** Validation *********************** //
+
+function validateNewCardOnExecBoard(cardId){
+
+}
+
+// req: 1. 2 assings
+//      2. Title
+//      3. Description
+//      4. Card Type
+//      5.  
 
 
 
