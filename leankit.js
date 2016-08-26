@@ -77,13 +77,36 @@ var usersLeankitToSlack = {
 //Leankit API events 
 var leankitEventsList = {
     //Occurs when a card is moved from another board to the board being monitored.
+    /*
+    assignedUserId:0
+    blockedComment:null
+    boardVersion:88848
+    cardId:379424830
+    commentText:null
+    eventDateTime:"08/26/2016 01:38:23 PM"
+    eventType:"card-move-to-board"
+    fromLaneId:null
+    isBlocked:false
+    isUnassigning:false
+    message:"Eyal Yaniv moved the Card [test move event] from Board [Plan] Lane [Drop] to Board [Execution] Lane [Drop Lane]."
+    requiresBoardRefresh:false
+    taskboardId:0
+    taskboardParentCardId:0
+    toLaneId:156145202
+    userId:152743345
+    wipOverrideComment:null
+    wipOverrideLane:0
+    wipOverrideUser:0
+    */
     "card-move-to-board": function( e ) {
         console.log(e);
+        
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
             if(err){
                 console.error( "Error getting leankit card:", err );
                 return;
             }
+            var isCardValid = validateNewCardOnExecBoard(e.eventType, card);
             if(slackInt){
                 sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             }
@@ -129,11 +152,11 @@ var leankitEventsList = {
                 return;
             }
             if(e.isBlocked){
-                if(!slackInt){
+                if(slackInt){
                     //Sends msg to the person who blocked the card
                     sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], usersLeankitToSlack[e.userId] + ", You just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". Please make sure it's approved at #block_task_approval");
                     //Sends msg to #block_task_approval channel to notify that a card was blocked without reason
-                    //sendMsgToSlack("Process-Manager-Bot", "#block_task_approval", usersLeankitToSlack[e.userId] + " just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". @tal, @eyalyaniv Please make sure it's approved");  
+                    sendMsgToSlack("Process-Manager-Bot", "#block_task_approval", usersLeankitToSlack[e.userId] + " just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". @tal, @eyalyaniv Please make sure it's approved");  
                 }
             }
             insertPostDemoReport(event);
@@ -237,7 +260,7 @@ function sendMsgToSlack(sender, target, msg){
 
 // ******************** Validation *********************** //
 
-function validateNewCardOnExecBoard(cardId){
+function validateNewCardOnExecBoard(eventType, card){
 
 }
 
@@ -249,3 +272,86 @@ function validateNewCardOnExecBoard(cardId){
 
 
 
+/* ---- card object -----
+
+Active:false
+ActualFinishDate:null
+ActualStartDate:null
+AssignedUserId:152743345
+AssignedUserIds:Array[2]
+AssignedUserName:"Eyal Yaniv"
+AssignedUsers:Array[2]
+AttachmentsCount:0
+BlockReason:null
+BlockStateChangeDate:null
+BoardId:156116725
+BoardTitle:"Execution"
+CardContexts:Array[0]
+CardDrillThroughBoardIds:Array[0]
+CardTypeIconColor:null
+CardTypeIconName:null
+ClassOfServiceColorHex:null
+ClassOfServiceCustomIconColor:null
+ClassOfServiceCustomIconName:null
+ClassOfServiceIconPath:null
+ClassOfServiceId:0
+ClassOfServiceTitle:null
+Color:"#E5CE21"
+CommentsCount:0
+CountOfOldCards:0
+CreateDate:"08/26/2016"
+CurrentContext:null
+CurrentTaskBoardId:null
+DateArchived:null
+Description:null
+DrillThroughBoardId:null
+DrillThroughCompletionPercent:null
+DrillThroughProgressComplete:null
+DrillThroughProgressSizeComplete:null
+DrillThroughProgressSizeTotal:null
+DrillThroughProgressTotal:null
+DrillThroughStatistics:null
+DueDate:"08/28/2016"
+ExternalCardID:null
+ExternalCardIdPrefix:null
+ExternalSystemName:null
+ExternalSystemUrl:null
+GravatarLink:"fee8a942a551dc8daf6950f84718f167?s=25"
+HasDrillThroughBoard:false
+HasMultipleDrillThroughBoards:false
+Icon:""
+Id:379424830
+Index:0
+IsBlocked:false
+IsOlderThanXDays:false
+LaneId:156145202
+LaneTitle:"Drop Lane"
+LastActivity:"08/26/2016 01:38:23 PM"
+LastAttachment:null
+LastComment:null
+LastMove:"08/26/2016 01:38:23 PM"
+ParentBoardId:0
+ParentBoardIds:Array[0]
+ParentCardId:null
+ParentCardIds:Array[0]
+ParentTaskboardId:null
+Priority:1
+PriorityText:"Normal"
+Size:2
+SmallGravatarLink:"fee8a942a551dc8daf6950f84718f167?s=17"
+StartDate:"08/26/2016"
+SystemType:"Card"
+Tags:null
+TaskBoardCompletedCardCount:0
+TaskBoardCompletedCardSize:0
+TaskBoardCompletionPercent:0
+TaskBoardTotalCards:0
+TaskBoardTotalSize:0
+Title:"test move event"
+Type:Object
+TypeColorHex:"#E5CE21"
+TypeIconPath:"../../Content/Images/Icons/Library/help.png"
+TypeId:156110140
+TypeName:"Task - Cross"
+Version:5
+*/
