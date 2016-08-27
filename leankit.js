@@ -74,6 +74,10 @@ var usersLeankitToSlack = {
     219782980: "@shish"
 };
 
+var boardNameToId = {
+    Plan: "213572592"
+};
+
 //Leankit API events 
 var leankitEventsList = {
     //Occurs when a card is moved from another board to the board being monitored.
@@ -107,6 +111,11 @@ var leankitEventsList = {
                 return;
             }
             var isCardValid = validateNewCardOnExecBoard(e.eventType, card);
+            if(isCardValid.isCardRejected){
+                client.moveCardToBoard(card.Id, boardNameToId["Plan"], function(err, response){
+                    console.log(response);
+                });
+            }
             if(slackInt){
                 sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             }
@@ -135,6 +144,7 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
+            var isCardValid = validateNewCardOnExecBoard(e.eventType, card);
             if(slackInt){
                 sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             }
@@ -207,10 +217,10 @@ var leankitEventsList = {
 };
 
 //Gets a board object under the account 
-client.getBoard(boardId_execution, function( err, board ) {  
-   if ( err ) console.error( "Error getting boards:", err );
-   console.log(board.BoardUsers);
- });
+// client.getBoard(boardId_execution, function( err, board ) {  
+//    if ( err ) console.error( "Error getting boards:", err );
+//    console.log(board.BoardUsers);
+//  });
 
 function generateEvents(eventList){
     for(var e in eventList){
@@ -261,7 +271,31 @@ function sendMsgToSlack(sender, target, msg){
 // ******************** Validation *********************** //
 
 function validateNewCardOnExecBoard(eventType, card){
-
+    var validationObj = {   isCardRejected: false,
+                            cardSize: true, 
+                            cardUsers: true,
+                            cardDueDate: true,
+                            cardDescription: true };
+    switch(eventType){
+        case("card-move-to-board" || "card-creation"):
+            if(card.size > 1){
+                validationObj.cardSize = false;
+                validationObj.isCardRejected = true;
+            }
+            if(card.AssignedUsers.length < 2){
+                validationObj.cardUsers = false;
+                validationObj.isCardRejected = true;
+            }
+            if(!card.DueDate){
+                validationObj.cardDueDate = false;
+                validationObj.isCardRejected = true;
+            }
+            if(!card.Description){
+                validationObj.cardDescription = false;
+                validationObj.isCardRejected = true;
+            }
+        return validationObj;
+    }
 }
 
 // req: 1. 2 assings
