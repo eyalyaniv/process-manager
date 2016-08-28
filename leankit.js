@@ -2,7 +2,7 @@
 'use strict';
 
 //Flags
-var slackInt = false;
+var slackInt = true;
 var gSheets = true;
 
 // Reference to packages
@@ -75,7 +75,19 @@ var usersLeankitToSlack = {
 };
 
 var boardNameToId = {
-    Plan: "213572592"
+    "Plan": "213572592",
+    "Execution": "156116725",
+    "BI": "158334672",
+    "Marketing": "162843235",
+    "DevOps": "195207449",
+    "Game Engine": "195208668",
+    "Unity": "195209674",
+    "QA": "260684238",
+    "Rules": "295704070",
+    "Community": "297531259",
+    "Art": "333892671",
+    "Product Planning": "339642420",
+    "Game Managment": "344471340"
 };
 
 //Leankit API events 
@@ -102,6 +114,7 @@ var leankitEventsList = {
     wipOverrideLane:0
     wipOverrideUser:0
     */
+    //Occurs when a card is moved to the board.
     "card-move-to-board": function( e ) {
         console.log(e);
         
@@ -111,18 +124,21 @@ var leankitEventsList = {
                 return;
             }
             var isCardValid = validateNewCardOnExecBoard(e.eventType, card);
+            //If one of the validation parameters is false the "isCardRejected" is also false and the card returns to it's origin board.
             if(isCardValid.isCardRejected){
                 client.moveCardToBoard(card.Id, boardNameToId["Plan"], function(err, response){
                     console.log(response);
+                    sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], "The Action --> " + event.message + " failed! and the card moved back to it's origin. The card does not meet the minimum requirements to be moved to execution board " + JSON.stringify(isCardValid));
+                    
                 });
             }
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
+            else{
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], "The Action --> " + event.message + " executed succesfully passing all card requirements for execution board, Good Luck Executing!");
             }
             insertPostDemoReport(event);
         });  
     },
-    //Occurs when a card is moved on the board.
+    //Occurs when a card is moved on the board. 
     "card-move": function( e ) {
         console.log(e);
         getLeankitCard(boardId_execution, e.cardId, e, function(err, card, event){
@@ -130,9 +146,7 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
-            }
+            sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
@@ -145,9 +159,7 @@ var leankitEventsList = {
                 return;
             }
             var isCardValid = validateNewCardOnExecBoard(e.eventType, card);
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
-            }
+            sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
@@ -162,12 +174,10 @@ var leankitEventsList = {
                 return;
             }
             if(e.isBlocked){
-                if(slackInt){
-                    //Sends msg to the person who blocked the card
-                    sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], usersLeankitToSlack[e.userId] + ", You just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". Please make sure it's approved at #block_task_approval");
-                    //Sends msg to #block_task_approval channel to notify that a card was blocked without reason
-                    sendMsgToSlack("Process-Manager-Bot", "#block_task_approval", usersLeankitToSlack[e.userId] + " just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". @tal, @eyalyaniv Please make sure it's approved");  
-                }
+                //Sends msg to the person who blocked the card
+                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], usersLeankitToSlack[e.userId] + ", You just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". Please make sure it's approved at #block_task_approval");
+                //Sends msg to #block_task_approval channel to notify that a card was blocked without reason
+                sendMsgToSlack("Process-Manager-Bot", "#block_task_approval", usersLeankitToSlack[e.userId] + " just blocked the task: " + card.ExternalSystemUrl + " with the reason: " + e.blockedComment + ". @tal, @eyalyaniv Please make sure it's approved");  
             }
             insertPostDemoReport(event);
         });
@@ -180,9 +190,7 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
-            }
+            sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
@@ -194,9 +202,7 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
-            }
+            sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     },
@@ -208,9 +214,7 @@ var leankitEventsList = {
                 console.error( "Error getting leankit card:", err );
                 return;
             }
-            if(slackInt){
-                sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
-            }
+            sendMsgToSlack("Process-Manager-Bot", usersLeankitToSlack[e.userId], event.message);
             insertPostDemoReport(event);
         });
     }
@@ -221,6 +225,12 @@ var leankitEventsList = {
 //    if ( err ) console.error( "Error getting boards:", err );
 //    console.log(board.BoardUsers);
 //  });
+
+//Gets a boards under the account 
+//  client.getBoards( function( err, boards ) {  
+//     if ( err ) console.error( "Error getting boards:", err );
+//     console.log(boards);
+//   });
 
 function generateEvents(eventList){
     for(var e in eventList){
@@ -246,26 +256,30 @@ function getLeankitBoard(){
 }
 
 function insertPostDemoReport(event){
-    // request.post( gms_pdr_script_url, JSON.stringify(event), function (error, response, body) {
-    //     if (!error && response.statusCode == 200) {
-    //         console.log(body);
-    //     }
-    // });
-    request( { method: 'POST', url: gms_pdr_script_url, headers: {'Content-Type': 'application/json'}, json: event}, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            //console.log(body);
-        }
-    });
+    if(gSheets){
+        // request.post( gms_pdr_script_url, JSON.stringify(event), function (error, response, body) {
+        //     if (!error && response.statusCode == 200) {
+        //         console.log(body);
+        //     }
+        // });
+        request( { method: 'POST', url: gms_pdr_script_url, headers: {'Content-Type': 'application/json'}, json: event}, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                //console.log(body);
+            }
+        });
+    }
 }
 
 function sendMsgToSlack(sender, target, msg){
-    slack.webhook({
-        channel: target,
-        username: sender,
-        text: msg
-    },  function(err, response) {
-            console.log(msg);
-        });
+    if(slackInt){
+        slack.webhook({
+            channel: target,
+            username: sender,
+            text: msg
+        },  function(err, response) {
+                console.log(msg);
+            });
+    }
 }
 
 // ******************** Validation *********************** //
